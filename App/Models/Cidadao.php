@@ -86,4 +86,50 @@ class Cidadao {
         return ['errorMessage' => $stmt->errorInfo()];
     }
 
+    public function getCidadaoById($id)
+    {
+        $sql = "SELECT * FROM cidadao where id = ?";
+
+        $stmt = Model::getConn()->prepare($sql);
+        $stmt->bindValue(1, $id);
+
+        if ($stmt->execute()) {
+            $cidadao = $stmt->fetch(PDO::FETCH_OBJ);
+
+            if (!$cidadao){
+                return null;
+            }
+
+            $this->id = $cidadao->id;
+            $this->txtNome = $cidadao->txt_nome;
+            $this->txtSobrenome = $cidadao->txt_sobrenome;
+            $this->nroCpf = $cidadao->nro_cpf;
+            $this->contatoId = $cidadao->contato_id;
+            $this->enderecoId = $cidadao->endereco_id;
+
+            return $this;
+        }
+
+        return null;
+    }
+
+    public function update()
+    {
+        $sql = "UPDATE cidadao SET txt_nome = ?, txt_sobrenome = ?, nro_cpf = ? WHERE id = ?";
+
+        $stmt = Model::getConn()->prepare($sql);
+        $stmt->bindValue(1, $this->txtNome);
+        $stmt->bindValue(2, $this->txtSobrenome);
+        $stmt->bindValue(3, $this->nroCpf);
+        $stmt->bindValue(4, $this->id);
+
+        if ($stmt->execute()) {
+            $this->id = Model::getConn()->lastInsertId();
+            return $this;
+        } else {
+            print_r($stmt->errorInfo());
+            return null;
+        }
+    }
+
 }

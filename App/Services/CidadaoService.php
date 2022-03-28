@@ -75,6 +75,56 @@ class CidadaoService extends Service {
                 echo json_encode($cidadaoModel);exit;
             }
 
+        } catch (\Exception $e) {
+            Model::getConn()->rollBack();
+            http_response_code(500);
+            echo json_encode(["erro" => "Problemas ao inserir Cidadão", "message" => $e->getMessage()]);
+        }
+    }
+
+    public function update($id)
+    {
+        $data = $this->getRequestBody();
+
+        try {
+            Model::getConn()->beginTransaction();
+
+            $cidadaoModel = $this->model("Cidadao");
+            $cidadao = $cidadaoModel->getCidadaoById($id);
+            $cidadao->txtNome = $data->txt_nome;
+            $cidadao->txtSobrenome = $data->txt_sobrenome;
+            $cidadao->nroCpf = $this->deixarSomenteDigitos($data->nro_cpf);
+            $cidadao->update();
+
+            $contatoModel = $this->model("Contato");
+            $contato = $contatoModel->getContatoById($cidadao->contatoId);
+            $contato->txtEmail = $data->txt_email;
+            $contato->nroCelular = $data->nro_celular;
+            $contato->update();
+
+            $enderecoModel = $this->model("Endereco");
+            $endereco = $enderecoModel->getEnderecoById($cidadao->enderecoId);
+
+            if (!empty($data->nro_cep) and $data->nro_cep != $this->deixarSomenteDigitos($endereco->nroCep)) {
+                $clientGuzzle = new Client();
+                $url = "https://viacep.com.br/ws/{$data->nro_cep}/json/";
+                $response = $clientGuzzle->request('GET', $url);
+
+                if ($response->getStatusCode() !== 200) {
+                    throw new \Exception("Error ao consultar CEP");
+                }
+
+                $respLogra = json_decode($response->getBody()->__toString());
+
+                $endereco->nroCep = $respLogra->cep;
+                $endereco->txtLogradouro = $respLogra->logradouro;
+                $endereco->txtBairro = $respLogra->bairro;
+                $endereco->txtCidade = $respLogra->localidade;
+                $endereco->txtUf = $respLogra->uf;
+                $endereco->update();
+            }
+
+            Model::getConn()->commit();
 
         } catch (\Exception $e) {
             Model::getConn()->rollBack();

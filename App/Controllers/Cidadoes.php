@@ -25,4 +25,9 @@ class Cidadoes extends Controller {
     {
         return $this->cidadao_service->findByCpf($param);
     }
+
+    public function update($id)
+    {
+        return $this->cidadao_service->update($id);
+    }
 }
