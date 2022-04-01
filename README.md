@@ -1,4 +1,5 @@
 # api-cidadao
+```
 DESAFIO - Desenvolvimento de API em PHP para manipular dados de cidadão.
 
 Criar database:
@@ -64,6 +65,7 @@ http://localhost:8087/cidadoes/06851944520  GET
 
 
 
+
 endpoint Atualizar cidadão:
 http://localhost:8087/cidadoes/2  PUT
 
@@ -75,6 +77,7 @@ http://localhost:8087/cidadoes/2  PUT
     "nro_celular": "75981235665",
     "nro_cep": "44500000"
 }
+```
 
 
 
